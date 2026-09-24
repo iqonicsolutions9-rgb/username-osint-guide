@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Username OSINT for Beginners: A Practical Starting Guide</title>
+<meta name="description" content="How username OSINT works, the open-source tools people actually use, a step-by-step first investigation, and the mistakes that lead to wrong conclusions.">
+<link rel="canonical" href="https://iqonicsolutions9-rgb.github.io/username-osint-guide/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Username OSINT for Beginners: A Practical Starting Guide">
+<meta property="og:description" content="Open-source username investigation explained from zero: tools, workflow, and how to verify what you find.">
+<meta property="og:url" content="https://iqonicsolutions9-rgb.github.io/username-osint-guide/">
+<style>
+  body{margin:0;background:#0f1419;color:#e6edf3;font:16px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:760px;margin:0 auto;padding:56px 22px 90px}
+  header{border-bottom:1px solid #2b3440;padding-bottom:24px;margin-bottom:32px}
+  h1{font-size:2rem;line-height:1.25;margin:0 0 10px;color:#fff}
+  .sub{color:#9aa7b4;font-size:.95rem}
+  h2{font-size:1.3rem;color:#fff;margin:38px 0 10px;padding-left:12px;border-left:3px solid #3fb950}
+  h3{font-size:1.05rem;color:#fff;margin:24px 0 6px}
+  p{margin:0 0 16px}
+  a{color:#58a6ff}
+  code{background:#1c2430;padding:2px 6px;border-radius:4px;font-size:.9em}
+  pre{background:#1c2430;padding:14px 16px;border-radius:6px;overflow:auto;font-size:.9rem;margin:0 0 18px}
+  ul,ol{padding-left:22px;margin:0 0 16px}
+  li{margin-bottom:6px}
+  .callout{background:#161d27;border:1px solid #2b3440;border-radius:6px;padding:14px 18px;margin:22px 0}
+  .callout strong{color:#3fb950}
+  table{border-collapse:collapse;width:100%;margin:0 0 20px;font-size:.93rem}
+  th,td{border:1px solid #2b3440;padding:8px 11px;text-align:left;vertical-align:top}
+  th{background:#161d27;color:#fff}
+  footer{margin-top:48px;padding-top:18px;border-top:1px solid #2b3440;color:#9aa7b4;font-size:.88rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Username OSINT for Beginners: A Practical Starting Guide</h1>
+  <div class="sub">Last revised September 2026 &middot; Open-source intelligence, explained from zero</div>
+</header>
+
+<article>
+
+<p>OSINT stands for open-source intelligence: information gathered from sources anyone can access. Username OSINT is the narrow slice of that field concerned with one question: <em>given a handle, where else does it appear, and what does that tell us?</em></p>
+
+<p>It's the most approachable corner of OSINT because it needs no special access, no paid databases, and no technical background beyond a browser. This guide covers how it works, which tools people actually use, how to run a first investigation, and, most importantly, how not to fool yourself with the results.</p>
+
+<h2>Why usernames are such a strong signal</h2>
+
+<p>People are creatures of habit. The handle someone picks at fourteen tends to follow them for years, reused on gaming platforms, forums, code hosts, music services, and marketplaces. Even when it changes, it usually changes in predictable ways: a number appended, an underscore swapped for a dot, a birth year added.</p>
+
+<p>That reuse means a single handle can act as a key that unlocks an entire pattern of activity. For a security researcher, that's how you connect a throwaway account to a real identity. For an ordinary person, it's how you discover which forgotten accounts are still exposing your data.</p>
+
+<h2>How the tools work under the hood</h2>
+
+<p>Every username OSINT tool relies on the same trick. Most platforms expose profiles at a predictable URL: <code>site.com/username</code>, <code>site.com/u/username</code>, <code>username.site.com</code>. The tool holds a list of these patterns, substitutes the target handle into each, sends a request, and inspects the response to decide whether a real profile exists.</p>
+
+<p>The hard part isn't sending requests. It's the detection logic. Some sites return HTTP 404 for a missing user. Others return 200 with a "not found" message in the body. Some redirect. Some show a CAPTCHA. A good tool encodes a per-site rule for each of these cases; a bad one reports false positives on every site that returns 200 for any URL.</p>
+
+<p>The most widely used open detection dataset is the <strong>WhatsMyName</strong> project, a public JSON file where each entry describes one site: the URL pattern, what a positive match looks like, and what a negative match looks like. Several tools consume this file directly, and it's updated as sites change their structure.</p>
+
+<h2>The tools beginners actually use</h2>
+
+<table>
+  <tr><th>Tool</th><th>Type</th><th>Best for</th></tr>
+  <tr><td>WhatsMyName web app</td><td>Browser, no install</td><td>First searches; checking your own footprint; anyone who doesn't want a terminal</td></tr>
+  <tr><td>Sherlock</td><td>Python CLI</td><td>Scripted or batch searches on a machine you control</td></tr>
+  <tr><td>Maigret</td><td>Python CLI</td><td>Deeper reports with profile parsing; slower but richer</td></tr>
+  <tr><td>Manual URL checking</td><td>Browser</td><td>Verifying a specific match before you rely on it</td></tr>
+</table>
+
+<p>If you're starting out, use the browser tool. The <a href="https://whatsmynameapp.us/tools/osint">WhatsMyName OSINT tool</a> runs the full site list without installing anything, which removes the single biggest barrier for beginners. Move to the command-line tools later if you need automation.</p>
+
+<h2>Your first investigation, step by step</h2>
+
+<h3>1. Define the question before you search</h3>
+<p>"Find everything about this handle" is not a question. "Does this handle appear on any developer platform?" or "Is this the same person as the account on site X?" is. A defined question tells you when to stop.</p>
+
+<h3>2. Collect handle variants</h3>
+<p>Write down the exact handle, then the obvious variants: without underscores, with common numbers, first-name-plus-surname forms. Search each one. Most real connections are found on a variant, not the original.</p>
+
+<h3>3. Run the bulk search</h3>
+<p>Enter each variant into the tool and let it finish. Note every positive match with the site name and the full profile URL. Don't interpret yet; just collect.</p>
+
+<h3>4. Verify every match manually</h3>
+<p>Open each profile. Look for corroborating signals: a matching avatar, the same bio phrasing, a linked account, a location or timezone consistent with what you already know. One match with two corroborating signals is worth more than ten bare matches.</p>
+
+<h3>5. Record what you found and how</h3>
+<p>Keep the URL, the date, a screenshot, and a one-line note of why you believe the match is real. Profiles get deleted; your record shouldn't depend on them staying up.</p>
+
+<div class="callout">
+<strong>Rule of thumb:</strong> a bulk search tells you where a handle <em>exists</em>. Only manual verification tells you whether it's the same <em>person</em>. Skipping step 4 is how beginners end up confidently wrong.
+</div>
+
+<h2>The mistakes that produce wrong conclusions</h2>
+
+<ul>
+  <li><strong>Treating a common handle like a rare one.</strong> <code>mike_88</code> on twelve sites is twelve different Mikes until proven otherwise.</li>
+  <li><strong>Trusting false positives.</strong> Some sites return a real-looking page for any username. If a site shows a match for a random string like <code>xq9v2plm</code>, its results are unreliable.</li>
+  <li><strong>Ignoring negative space.</strong> A handle that appears on gaming and music platforms but nowhere professional tells you something too.</li>
+  <li><strong>Stopping at the first good match.</strong> One confirmed profile often contains the next handle, email fragment, or linked site. The investigation compounds.</li>
+  <li><strong>Forgetting the ethics.</strong> Public doesn't mean fair game. Investigating yourself, a business partner, or a suspicious contact is reasonable. Building a profile of someone to harass or locate them is not, and in many places it's illegal.</li>
+</ul>
+
+<h2>Where to go from here</h2>
+
+<p>Once bulk search and manual verification feel natural, the next skills are reverse image search on avatars, email-to-username pivoting, and reading platform metadata. A longer walkthrough that covers those pivots is in this <a href="https://whatsmynameapp.us/blog/username-osint-guide">username OSINT guide</a>.</p>
+
+<p>For the non-technical side, the broader question of what a bulk search can and can't reveal, and how to read results without over-interpreting them, is covered well in this <a href="https://username-search-guide.netlify.app/">free username search guide</a>.</p>
+
+<p>Start with your own handles. It's the safest practice target, it's useful, and it'll show you exactly how much a single username gives away.</p>
+
+</article>
+
+<footer>
+  Independent guide. Not affiliated with any platform named above. Tools referenced are open source or free to use at the time of writing.
+</footer>
+</div>
+</body>
+</html>
